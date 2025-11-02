@@ -58,11 +58,11 @@ async fn generate_config(config_path: &Path) {
 
 // Define Config
 pub struct ConfigController {
-
+    config: DefaultConfig,
 }
 
 impl ConfigController {
-    pub async fn read_config() -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn new() -> Self {
         let config_tag: ColoredString = "Config".green();
         
         // Locate Configuration File
@@ -79,8 +79,11 @@ impl ConfigController {
         let _config: DefaultConfig = serde_yaml::from_str(&file)
             .expect("Failed to parse config file");
 
-        
+        println!("[{}] Configuration Loaded.", config_tag);
 
-        Ok(())
+        // Return Construction
+        ConfigController {
+            config: _config,
+        }
     }
 }

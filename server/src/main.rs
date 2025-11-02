@@ -19,7 +19,7 @@ fn main() {
 
 #[tokio::main]
 async fn run() -> Result<(), Box<dyn Error>> {
-    ConfigController::read_config().await?;
+    let config_controller = ConfigController::new().await;
     ServerController::start().await?;
 
     // TODO: Replace with your application logic.
