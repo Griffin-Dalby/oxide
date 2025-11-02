@@ -19,7 +19,7 @@ fn main() {
 #[tokio::main]
 async fn run() -> Result<(), Box<dyn Error>> {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-    ConfigController::read_config().await?;
+    let config_controller: ConfigController = ConfigController::new().await;
     ServerController::start().await?;
 
     // TODO: Replace with your application logic.

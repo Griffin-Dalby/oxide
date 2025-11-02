@@ -10,7 +10,7 @@
 */
 
 // Implement
-use std::io;
+use std::{io, sync::Arc};
 use std::collections::HashMap;
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
@@ -25,16 +25,11 @@ use ratatui::{
 };
 
 // Pages
-use crate::Page::splash::SplashPage;
-
+mod page;
+use page::{Page};
 
 // Page
-pub trait Page: std::fmt::Debug {
-    fn draw(&self, frame: &mut Frame);
-    fn handle_events(&mut self, event: &Event) -> Result<(), Box<dyn std::error::Error>>;
-}
-
-#[derive(Debug)]
+#[derive(Debug, Eq, Hash, PartialEq)]
 pub enum PageId {
     Splash,
 }
@@ -54,7 +49,7 @@ pub struct AppState {
 
 #[derive(Debug, Default)]
 pub struct App {
-    pub pages: HashMap<PageId, Box<dyn Page>>,
+    pub pages: page::PageMap,
     pub current_page: PageId,
     pub exit: bool,
     pub state: AppState,
@@ -62,8 +57,7 @@ pub struct App {
 
 impl App {
     pub fn new() -> Self {
-        let mut pages: HashMap<PageId, Box<dyn Page>> = HashMap::new();
-        pages.insert(PageId::Splash, Box::new(crate::::SplashPage::new()));
+        let pages = page::init();
     
         Self {
             pages,
@@ -75,17 +69,22 @@ impl App {
 
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
         while !self.exit {
-            terminal.draw(|frame| self.draw(frame))?;
-            self.handle_events()?;
+            terminal.draw(|frame| {
+                let area = frame.area();
+                let page = self.pages.get(&self.current_page).unwrap();
+                let page = page.lock().unwrap();
+
+                page.draw(frame);
+            })?;
+
+            if event::poll(std::time::Duration::from_millis(100))? {
+                let evt = event::read()?;
+                let page = self.pages.get_mut(&self.current_page).unwrap();
+                let mut page = page.lock().unwrap();
+
+                let _eres = page.handle_event(&evt, &mut self.state);
+            }
         }
         Ok(())
-    }
-
-    fn draw(&self, frame: &mut Frame) {
-        todo!()
-    }
-
-    fn handle_events(&mut self) -> io::Result<()> {
-        todo!()
     }
 }
