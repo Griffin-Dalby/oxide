@@ -6,7 +6,6 @@ use server::ServerController;
 mod config;
 use config::ConfigController;
 
-use std::env;
 use std::error::Error;
 
 
@@ -19,7 +18,8 @@ fn main() {
 
 #[tokio::main]
 async fn run() -> Result<(), Box<dyn Error>> {
-    let config_controller = ConfigController::new().await;
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    ConfigController::read_config().await?;
     ServerController::start().await?;
 
     // TODO: Replace with your application logic.

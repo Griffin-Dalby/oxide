@@ -24,3 +24,9 @@ target
 # Added by cargo
 
 /target
+
+
+# Added by oxide
+
+server/config.yml
+client/config.yml
